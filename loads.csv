@@ -1,0 +1,26 @@
+load_id,origin,destination,pickup_datetime,delivery_datetime,equipment_type,loadboard_rate,notes,weight,commodity_type,num_of_pieces,miles,dimensions
+1,New York,Los Angeles,2026-03-05T08:00:00,2026-03-10T17:00:00,Flatbed,1500.00,Full truckload - no hazmat,5000.0,Electronics,10,2800,48x8x8.5
+2,Chicago,Miami,2026-03-06T10:30:00,2026-03-08T14:00:00,Van,950.00,Climate controlled preferred,2500.0,Pharmaceuticals,25,1200,40x8x8
+3,Seattle,Denver,2026-03-07T06:00:00,2026-03-09T18:00:00,Reefer,1200.00,Frozen goods - keep at -18C,3500.0,Food Products,15,1100,40x8x8
+4,Boston,Atlanta,2026-03-05T12:00:00,2026-03-07T10:00:00,Flatbed,1350.00,Heavy machinery - requires ties,6000.0,Industrial Equipment,8,1000,48x8x8.5
+5,Los Angeles,New York,2026-03-08T09:00:00,2026-03-12T16:00:00,Van,1450.00,Fragile items - handle with care,2000.0,Glassware,30,2800,40x8x8
+6,Miami,Chicago,2026-03-06T14:00:00,2026-03-08T22:00:00,Reefer,1100.00,Perishables - expedited delivery,4000.0,Fresh Produce,12,1200,40x8x8
+7,Denver,Seattle,2026-03-07T11:00:00,2026-03-10T13:00:00,Flatbed,1300.00,Oversized load - wide permit included,5500.0,Construction Materials,9,1100,53x8x8.5
+8,Atlanta,Boston,2026-03-05T07:30:00,2026-03-06T20:00:00,Van,900.00,Standard parcel delivery,1800.0,Consumer Goods,20,1000,40x8x8
+9,Phoenix,Portland,2026-03-06T08:00:00,2026-03-09T16:00:00,Reefer,1050.00,Dairy products - temperature sensitive,3200.0,Dairy,14,1300,40x8x8
+10,Dallas,Houston,2026-03-05T15:00:00,2026-03-06T12:00:00,Flatbed,650.00,Local delivery - short haul,4500.0,Textiles,6,240,48x8x8.5
+11,New York,Chicago,2026-03-07T09:00:00,2026-03-09T08:00:00,Van,1100.00,High-value cargo - insured,2200.0,Jewelry,28,790,40x8x8
+12,Los Angeles,Las Vegas,2026-03-05T10:00:00,2026-03-06T16:00:00,Reefer,550.00,Short distance - quick delivery,3800.0,Fresh Flowers,11,270,40x8x8
+13,Miami,Orlando,2026-03-06T11:00:00,2026-03-07T15:00:00,Flatbed,400.00,Regional delivery - no delays,2800.0,Furniture,7,240,48x8x8.5
+14,Seattle,Portland,2026-03-07T13:00:00,2026-03-08T18:00:00,Van,350.00,Lightweight cargo - efficient route,1500.0,Packaging,35,170,40x8x8
+15,Boston,Providence,2026-03-05T08:30:00,2026-03-06T10:00:00,Reefer,300.00,Regional - cold chain intact,2500.0,Seafood,16,50,40x8x8
+16,Chicago,Minneapolis,2026-03-06T09:00:00,2026-03-08T12:00:00,Flatbed,950.00,Machinery transport - insured,5200.0,Automotive Parts,10,430,48x8x8.5
+17,Denver,Salt Lake City,2026-03-07T10:30:00,2026-03-08T14:00:00,Van,500.00,Mountain route - experienced driver,2100.0,Retail Products,22,520,40x8x8
+18,Atlanta,Nashville,2026-03-05T14:00:00,2026-03-07T09:00:00,Reefer,800.00,Time-sensitive delivery,3600.0,Frozen Meals,13,250,40x8x8
+19,Phoenix,Tucson,2026-03-06T07:00:00,2026-03-07T10:00:00,Flatbed,300.00,Construction supplies - local,4200.0,Lumber,5,120,48x8x8.5
+20,Dallas,Austin,2026-03-05T11:00:00,2026-03-06T19:00:00,Van,450.00,Eco-friendly transport,2600.0,Organic Foods,24,195,40x8x8
+21,New York,Boston,2026-03-08T10:00:00,2026-03-09T12:00:00,Reefer,700.00,Urgent delivery - expedited,3900.0,Beverages,18,215,40x8x8
+22,Los Angeles,San Diego,2026-03-05T12:30:00,2026-03-06T17:00:00,Flatbed,350.00,Same-day delivery possible,2400.0,Household Goods,4,120,48x8x8.5
+23,Chicago,Detroit,2026-03-07T08:00:00,2026-03-08T16:00:00,Van,650.00,Direct route - no stops,2700.0,Auto Parts,26,280,40x8x8
+24,Miami,Tampa,2026-03-06T13:00:00,2026-03-07T18:00:00,Reefer,400.00,Fresh distribution - regional,3300.0,Fresh Seafood,17,280,40x8x8
+25,Seattle,Spokane,2026-03-07T15:00:00,2026-03-09T09:00:00,Flatbed,850.00,Long-haul - steady pace,4800.0,Farm Equipment,9,280,48x8x8.5
