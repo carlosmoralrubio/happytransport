@@ -15,7 +15,7 @@
 set -euo pipefail
 
 # ── Configuration — edit these variables ──────────────────────────────────────
-PROJECT_ID="happyrobot-488916"          # gcloud projects list
+PROJECT_ID="happy-transport"            # gcloud projects list
 REGION="europe-west1"                       # Cloud Run region
 SERVICE_NAME="get-loads-api-cr"          # Cloud Run service name
 IMAGE_NAME="get-loads-api-img"            # Artifact Registry image name
