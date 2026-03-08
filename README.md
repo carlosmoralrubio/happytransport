@@ -27,7 +27,10 @@ happytransport/
 │   │   ├── services.py        # Business logic
 │   │   └── security.py        # API authentication
 │   ├── tests/
-│   │   ├── test_api.py        # All tests
+│   │   ├── test_api.py        # Combined endpoint tests
+│   │   ├── test_health.py
+│   │   ├── test_loads.py
+│   │   ├── test_metrics.py
 │   │   └── conftest.py
 │   ├── data/                  # CSV data files
 │   ├── main.py
@@ -63,6 +66,7 @@ docker-compose up
 python3 -m venv venv && source venv/bin/activate
 pip install -r backend/requirements.txt
 export API_KEYS="dev-key-change-me"
+export DATASET_PATH="data/loads.csv" METRICS_PATH="data/metrics.csv"
 cd backend && uvicorn main:app --reload
 ```
 
@@ -85,19 +89,19 @@ npm run dev
 All endpoints require `X-API-Key` header.
 
 ### System
-- `GET /api/v1/health` - Health check
+- `GET /v1/health` - Health check
 
 ### Loads
-- `GET /api/v1/loads` - Query loads with filters
+- `GET /v1/loads` - Query loads with filters
 
 ### Metrics
-- `POST /api/v1/metrics` - Submit booking outcome metrics
-- `GET /api/v1/metrics` - Retrieve metrics
+- `POST /v1/metrics` - Submit booking outcome metrics
+- `GET /v1/metrics` - Retrieve metrics
 
 **Example:**
 ```bash
 curl -H "X-API-Key: dev-key-change-me" \
-  "http://localhost:8000/api/v1/loads?origin=Chicago"
+  "http://localhost:8000/v1/loads?origin=Chicago"
 ```
 
 ## 🐳 Docker
@@ -109,7 +113,7 @@ docker-compose up
 
 ### Build Backend
 ```bash
-docker build -f backend/Dockerfile -t happytransport-api:latest .
+docker build -f backend/Dockerfile -t happytransport-api:latest backend
 ```
 
 ### Deploy to Google Cloud Run
@@ -155,7 +159,7 @@ The script will:
 
 ### Manual step-by-step deployment
 
-> **Security note:** every endpoint—including `GET /metrics` and `POST /metrics`—requires a valid API key supplied in the `X-API-Key` header.  The same `verify_api_key` dependency is injected on these handlers as on `/health` and `/loads`, so the token is validated before any work is done.
+> **Security note:** every endpoint—including `GET /v1/metrics` and `POST /v1/metrics`—requires a valid API key supplied in the `X-API-Key` header. The same `verify_api_key` dependency is injected on these handlers as on `/v1/health` and `/v1/loads`, so the token is validated before any work is done.
 
 
 If you prefer to run each step yourself:
@@ -192,7 +196,7 @@ export IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/loads-api-repo/loads-matchi
 gcloud auth configure-docker "${REGION}-docker.pkg.dev"
 
 # Build (force linux/amd64 for Cloud Run compatibility)
-docker build --platform linux/amd64 -t $IMAGE .
+docker build --platform linux/amd64 -f backend/Dockerfile -t $IMAGE backend
 
 # Push
 docker push $IMAGE
@@ -222,7 +226,7 @@ gcloud run deploy loads-matching-api \
   --cpu=1 \
   --min-instances=0 \
   --max-instances=1 \
-  --set-env-vars="DATASET_PATH=/app/loads.csv" \
+  --set-env-vars="DATASET_PATH=/app/data/loads.csv,METRICS_PATH=/app/data/metrics.csv" \
   --set-secrets="API_KEYS=loads-api-keys:latest"
 ```
 
@@ -258,11 +262,11 @@ gcloud run services update loads-matching-api \
 
 The dataset is bundled inside the Docker image. To update it:
 
-1. Replace `loads_dataset.csv` (or point `DATASET_PATH` to your new file)
+1. Replace `backend/data/loads.csv` (or point `DATASET_PATH` to your new file)
 2. Rebuild and redeploy:
 
 ```bash
-docker build --platform linux/amd64 -t $IMAGE .
+docker build --platform linux/amd64 -f backend/Dockerfile -t $IMAGE backend
 docker push $IMAGE
 
 gcloud run deploy loads-matching-api \
@@ -280,12 +284,12 @@ All endpoints require the `X-API-Key` header.
 
 | Endpoint | Method | Description |
 |---|---|---|
-| `/health` | GET | Health check + dataset stats |
-| `/loads` | GET | Filter loads (main agent endpoint) |
+| `/v1/health` | GET | Health check + dataset stats |
+| `/v1/loads` | GET | Filter loads (main agent endpoint) |
 
 **Example agent request:**
 ```bash
-curl https://<your-service-url>/loads \
+curl https://<your-service-url>/v1/loads \
   -H "X-API-Key: your-key" \
   -G \
   --data-urlencode "origin=Chicago" 
@@ -299,5 +303,6 @@ curl https://<your-service-url>/loads \
 |---|---|---|
 | `API_KEYS` | Yes | Comma-separated valid API keys |
 | `API_KEY` | Alt. | Single API key (use `API_KEYS` for multiple) |
-| `DATASET_PATH` | No | Path to CSV/Excel file (default: `/app/loads_dataset.csv`) |
+| `DATASET_PATH` | No | Path to CSV/Excel file (default: `/app/data/loads.csv`) |
+| `METRICS_PATH` | No | Path to metrics CSV file (default: `/app/data/metrics.csv`) |
 | `PORT` | No | Server port — Cloud Run sets this automatically |

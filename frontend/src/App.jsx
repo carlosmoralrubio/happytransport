@@ -48,7 +48,7 @@ const SENTIMENT_COLORS = {
 
 // ── Mock data for when no API is configured ────────────────────────────────────
 const MOCK_METRICS = Array.from({ length: 40 }, (_, i) => {
-  const outcomes   = ["booked","booked","booked","rejected","no_capacity","cancelled","pending"]
+  const outcomes   = ["Booked with negotiations","Booked without negotiations","Not booked with negotiations","Not booked without negotiations","Not match","Unknown"]
   const sentiments = ["positive","positive","neutral","negative"]
   const d = new Date(2026, 2, 1 + Math.floor(i / 3))
   return {
@@ -116,12 +116,25 @@ const CustomTooltip = ({ active, payload, label }) => {
 // ── Main App ───────────────────────────────────────────────────────────────────
 export default function App() {
   const [metrics,   setMetrics]   = useState([])
+  const [loads,     setLoads]     = useState([])
   const [loading,   setLoading]   = useState(true)
   const [error,     setError]     = useState(null)
   const [usedMock,  setUsedMock]  = useState(false)
   const [filter,    setFilter]    = useState({ outcome: "", sentiment: "" })
   const [page,      setPage]      = useState(0)
+  const [loadsPage, setLoadsPage] = useState(0)
   const PAGE_SIZE = 8
+
+  const fetchLoads = useCallback(async () => {
+    try {
+      const data = await apiFetch("/v1/loads")
+      setLoads(data.loads || [])
+      console.log(`✅ Loaded ${data.loads?.length || 0} loads from API`)
+    } catch (err) {
+      console.error("❌ Failed to fetch loads:", err.message)
+      setLoads([])
+    }
+  }, [])
 
   const fetchMetrics = useCallback(async () => {
     setLoading(true)
@@ -130,7 +143,7 @@ export default function App() {
       const params = new URLSearchParams({ limit: 500 })
       if (filter.outcome)   params.append("outcome",   filter.outcome)
       if (filter.sentiment) params.append("sentiment", filter.sentiment)
-      const data = await apiFetch(`/api/v1/metrics?${params}`)
+      const data = await apiFetch(`/v1/metrics?${params}`)
       setMetrics(data.metrics || [])
       setUsedMock(false)
       console.log(`✅ Loaded ${data.metrics?.length || 0} metrics from API`)
@@ -143,6 +156,7 @@ export default function App() {
     }
   }, [filter])
 
+  useEffect(() => { fetchLoads() }, [fetchLoads])
   useEffect(() => { fetchMetrics() }, [fetchMetrics])
 
   // ── Derived stats ────────────────────────────────────────────────────────────
@@ -198,7 +212,7 @@ export default function App() {
           <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, opacity: 0.4 }}>
             {new Date().toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
           </div>
-          <button onClick={fetchMetrics} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.25)", color: "#f5f5f0", fontFamily: "'DM Mono', monospace", fontSize: 11, padding: "6px 14px", cursor: "pointer", letterSpacing: "0.1em" }}>
+          <button onClick={() => { fetchMetrics(); fetchLoads() }} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.25)", color: "#f5f5f0", fontFamily: "'DM Mono', monospace", fontSize: 11, padding: "6px 14px", cursor: "pointer", letterSpacing: "0.1em" }}>
             ↺ REFRESH
           </button>
         </div>
@@ -209,7 +223,7 @@ export default function App() {
         {/* ── Filters ── */}
         <div style={{ display: "flex", gap: 12, marginBottom: 40, alignItems: "center" }}>
           <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: "0.15em", opacity: 0.5 }}>FILTER</span>
-          {["", "booked", "rejected", "no_capacity", "cancelled", "pending"].map(o => (
+          {["", "Booked with negotiations", "Booked without negotiations", "Not booked with negotiations", "Not booked without negotiations", "Not match", "Unknown"].map(o => (
             <button key={o} onClick={() => { setFilter(f => ({ ...f, outcome: o })); setPage(0) }}
               style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, padding: "5px 14px", cursor: "pointer", letterSpacing: "0.08em", border: "1.5px solid #0a0a0a", background: filter.outcome === o ? "#0a0a0a" : "transparent", color: filter.outcome === o ? "#f5f5f0" : "#0a0a0a", transition: "all .1s" }}>
               {o || "ALL"}
@@ -233,9 +247,58 @@ export default function App() {
               <KPICard label="Total Processes"  value={total}              sub="all time records"     accent />
               <KPICard label="Booking Rate"     value={`${bookedPct}%`}    sub={`${booked} booked`}          />
               <KPICard label="Avg Price Diff"   value={`$${fmt(avgPriceDiff, 0)}`} sub="vs loadboard rate"  />
-              <KPICard label="Avg Duration"     value={`${fmt(avgDuration, 1)}m`}  sub="minutes to close"   />
+              <KPICard label="Avg Duration"     value={`${fmt(avgDuration, 1)}s`}  sub="seconds per call"   />
               <KPICard label="Valid MC Numbers" value={`${validMC}/${total}`}       sub="carrier verification" />
             </div>
+
+            {/* ── Available Loads ── */}
+            {loads.length > 0 && (() => {
+              const loadsTableData = loads.slice(loadsPage * PAGE_SIZE, (loadsPage + 1) * PAGE_SIZE)
+              const loadsTotalPages = Math.ceil(loads.length / PAGE_SIZE)
+              return (
+                <div style={{ background: "#fff", border: "1.5px solid #0a0a0a", overflow: "hidden", marginBottom: 24 }}>
+                  <div style={{ padding: "20px 24px 0", marginBottom: 0 }}>
+                    <SectionTitle>Available Loads ({loads.length})</SectionTitle>
+                  </div>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'DM Mono', monospace", fontSize: 12 }}>
+                    <thead>
+                      <tr style={{ background: "#0a0a0a", color: "#f5f5f0" }}>
+                        {["ID","Origin","Destination","Pickup","Delivery","Equipment","Rate","Weight","Miles","Commodity"].map(h => (
+                          <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontWeight: 400, letterSpacing: "0.08em", fontSize: 10, opacity: 0.7, whiteSpace: "nowrap" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loadsTableData.map((row, i) => (
+                        <tr key={row.load_id} style={{ borderBottom: "1px solid #e8e8e3", background: i % 2 === 0 ? "#fff" : "#fafaf8" }}>
+                          <td style={{ padding: "10px 16px", fontWeight: 500 }}>{row.load_id}</td>
+                          <td style={{ padding: "10px 16px" }}>{row.origin}</td>
+                          <td style={{ padding: "10px 16px" }}>{row.destination}</td>
+                          <td style={{ padding: "10px 16px", opacity: 0.6, whiteSpace: "nowrap" }}>{(row.pickup_datetime || "").slice(0, 16)}</td>
+                          <td style={{ padding: "10px 16px", opacity: 0.6, whiteSpace: "nowrap" }}>{(row.delivery_datetime || "").slice(0, 16)}</td>
+                          <td style={{ padding: "10px 16px" }}>{row.equipment_type}</td>
+                          <td style={{ padding: "10px 16px" }}>{row.loadboard_rate != null ? `$${Number(row.loadboard_rate).toFixed(0)}` : "—"}</td>
+                          <td style={{ padding: "10px 16px" }}>{row.weight != null ? `${Number(row.weight).toLocaleString()} lbs` : "—"}</td>
+                          <td style={{ padding: "10px 16px" }}>{row.miles != null ? Number(row.miles).toLocaleString() : "—"}</td>
+                          <td style={{ padding: "10px 16px" }}>{row.commodity_type || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", borderTop: "1px solid #e8e8e3" }}>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, opacity: 0.4 }}>
+                      {loadsPage * PAGE_SIZE + 1}–{Math.min((loadsPage + 1) * PAGE_SIZE, loads.length)} of {loads.length} loads
+                    </span>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={() => setLoadsPage(p => Math.max(0, p - 1))} disabled={loadsPage === 0}
+                        style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, padding: "5px 14px", cursor: loadsPage === 0 ? "not-allowed" : "pointer", border: "1.5px solid #0a0a0a", background: "transparent", opacity: loadsPage === 0 ? 0.3 : 1 }}>← PREV</button>
+                      <button onClick={() => setLoadsPage(p => Math.min(loadsTotalPages - 1, p + 1))} disabled={loadsPage >= loadsTotalPages - 1}
+                        style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, padding: "5px 14px", cursor: loadsPage >= loadsTotalPages - 1 ? "not-allowed" : "pointer", border: "1.5px solid #0a0a0a", background: "transparent", opacity: loadsPage >= loadsTotalPages - 1 ? 0.3 : 1 }}>NEXT →</button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* ── Charts Row ── */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>

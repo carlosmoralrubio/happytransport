@@ -15,7 +15,8 @@ from app.services import (
     METRICS_PATH
 )
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(prefix="/v1")
+legacy_router = APIRouter()
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ def health_check(api_key: str = Depends(verify_api_key)):
 # Loads Endpoints
 # ──────────────────────────────────────────────────────────────────────
 
+@legacy_router.get("/loads", response_model=LoadsResponse, tags=["Loads"], include_in_schema=False)
 @router.get("/loads", response_model=LoadsResponse, tags=["Loads"])
 def get_loads(
     origin: Optional[str] = Query(None, description="Filter by origin location."),

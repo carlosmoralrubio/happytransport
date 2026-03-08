@@ -41,8 +41,8 @@ This starts both backend and frontend in development mode.
 3. **Set environment variables:**
    ```bash
    export API_KEYS="dev-key-change-me"
-   export DATASET_PATH="backend/data/loads.csv"
-   export METRICS_PATH="backend/data/metrics.csv"
+   export DATASET_PATH="data/loads.csv"
+   export METRICS_PATH="data/metrics.csv"
    ```
 
 4. **Start backend server:**
@@ -70,7 +70,7 @@ Interactive API docs: `http://localhost:8000/docs`
 3. **Set API configuration:**
    Create `.env` file:
    ```
-   VITE_API_URL=http://localhost:8000/api/v1
+   VITE_API_BASE_URL=http://localhost:8000
    VITE_API_KEY=dev-key-change-me
    ```
 
@@ -135,7 +135,7 @@ pytest --cov=app tests/
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `VITE_API_URL` | `http://localhost:8000/api/v1` | Backend API URL |
+| `VITE_API_BASE_URL` | `http://localhost:8000` | Backend API base URL |
 | `VITE_API_KEY` | `dev-key-change-me` | API key |
 
 ## Troubleshooting
@@ -165,7 +165,7 @@ ls -la backend/data/
 
 Check that:
 1. Backend is running on `http://localhost:8000`
-2. `VITE_API_URL` is configured correctly in frontend `.env`
+2. `VITE_API_BASE_URL` is configured correctly in frontend `.env`
 3. API key matches between frontend and backend
 
 ## Next Steps

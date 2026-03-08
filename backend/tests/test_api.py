@@ -8,7 +8,7 @@ class TestHealth:
 
     def test_health_check(self, client, auth_headers):
         """Test health check endpoint."""
-        response = client.get("/api/v1/health", headers=auth_headers)
+        response = client.get("/v1/health", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "ok"
@@ -16,12 +16,12 @@ class TestHealth:
 
     def test_health_check_unauthorized(self, client):
         """Test health check without API key."""
-        response = client.get("/api/v1/health")
+        response = client.get("/v1/health")
         assert response.status_code == 401
 
     def test_health_check_invalid_key(self, client):
         """Test health check with invalid API key."""
-        response = client.get("/api/v1/health", headers={"X-API-Key": "invalid-key"})
+        response = client.get("/v1/health", headers={"X-API-Key": "invalid-key"})
         assert response.status_code == 403
 
 
@@ -30,7 +30,7 @@ class TestLoads:
 
     def test_get_loads(self, client, auth_headers):
         """Test getting loads without filters."""
-        response = client.get("/api/v1/loads", headers=auth_headers)
+        response = client.get("/v1/loads", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert "total_matches" in data
@@ -40,13 +40,13 @@ class TestLoads:
 
     def test_get_loads_unauthorized(self, client):
         """Test getting loads without API key."""
-        response = client.get("/api/v1/loads")
+        response = client.get("/v1/loads")
         assert response.status_code == 401
 
     def test_get_loads_with_origin_filter(self, client, auth_headers):
         """Test loads with origin filter."""
         response = client.get(
-            "/api/v1/loads",
+            "/v1/loads",
             params={"origin": "Chicago"},
             headers=auth_headers
         )
@@ -74,7 +74,7 @@ class TestMetrics:
             "outcome": "Booked with negotiations"
         }
         response = client.post(
-            "/api/v1/metrics",
+            "/v1/metrics",
             json=payload,
             headers=auth_headers
         )
@@ -85,7 +85,7 @@ class TestMetrics:
 
     def test_get_metrics(self, client, auth_headers):
         """Test retrieving metrics."""
-        response = client.get("/api/v1/metrics", headers=auth_headers)
+        response = client.get("/v1/metrics", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert "total_records" in data

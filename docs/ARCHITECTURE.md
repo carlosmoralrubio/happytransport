@@ -8,28 +8,22 @@ HappyTransport is a monorepo containing a FastAPI backend and React frontend for
 
 ```
 happytransport/
-├── backend/                    # Python FastAPI application
+├── backend/                     # Python FastAPI application
 │   ├── app/
-│   │   ├── api/v1/            # API routes organized by version
-│   │   │   └── endpoints/     # Individual endpoint modules
-│   │   ├── core/              # Core functionality (security, CORS)
-│   │   ├── models/            # Pydantic request/response models
-│   │   ├── schemas/           # Data models (Load schema)
-│   │   ├── services/          # Business logic (dataset, metrics)
-│   │   └── utils/             # Utility functions
-│   ├── tests/                 # Pytest test suite
-│   ├── data/                  # CSV data files
-│   ├── main.py                # Application entry point
-│   ├── config.py              # Configuration management
+│   │   ├── api.py              # All API endpoints (/v1)
+│   │   ├── models.py           # Pydantic request/response models
+│   │   ├── security.py         # API key verification
+│   │   └── services.py         # Dataset + metrics business logic
+│   ├── tests/                  # Pytest test suite
+│   ├── data/                   # CSV data files
+│   ├── main.py                 # FastAPI app + CORS + router include
+│   ├── config.py               # Environment-backed settings helper
 │   └── requirements.txt        # Python dependencies
 │
 ├── frontend/                   # React + Vite application
 │   ├── src/
-│   │   ├── components/        # React components
-│   │   ├── pages/             # Page components
-│   │   ├── services/          # API client
-│   │   ├── hooks/             # Custom React hooks
-│   │   ├── App.jsx
+│   │   ├── App.jsx             # Dashboard UI + charts + tables
+│   │   ├── config.js           # API client helpers and env bindings
 │   │   └── main.jsx
 │   └── package.json
 │
@@ -42,48 +36,55 @@ happytransport/
 
 ### Application Layers
 
-#### 1. **API Routes** (`app/api/v1/endpoints/`)
-- **health.py**: Health check endpoint
-- **loads.py**: Load query and filtering
-- **metrics.py**: Metrics submission and retrieval
+#### 1. **API Routes** (`backend/app/api.py`)
+- Single `APIRouter` with prefix `/v1`
+- Endpoints:
+    - `GET /v1/health`
+    - `GET /v1/loads`
+    - `POST /v1/metrics`
+    - `GET /v1/metrics`
 
-#### 2. **Models** (`app/models/`)
+#### 2. **Models** (`backend/app/models.py`)
 - Request/response schemas using Pydantic
 - Type validation and documentation
 - OpenAPI schema generation
 
-#### 3. **Schemas** (`app/schemas/`)
-- Core data models (Load)
-- Shared between multiple endpoints
+#### 3. **Services** (`backend/app/services.py`)
+- Dataset loading from CSV/Excel via pandas
+- Metrics appends and reads from CSV
+- Thread lock for safe concurrent metrics writes
 
-#### 4. **Services** (`app/services/`)
-- **dataset.py**: Dataset loading and caching
-- **metrics.py**: Metrics file operations
+#### 4. **Security** (`backend/app/security.py`)
+- API key validation from `X-API-Key`
+- Supports both `API_KEYS` (comma-separated) and `API_KEY`
+- Returns `401` for missing key and `403` for invalid key
 
-#### 5. **Core** (`app/core/`)
-- **security.py**: API key authentication
-- **cors.py**: CORS middleware configuration
+#### 5. **App Initialization** (`backend/main.py`)
+- Creates FastAPI app metadata
+- Configures CORS origins
+- Includes the API router
+- Exposes `/` root endpoint and startup logs
 
-#### 6. **Configuration** (`config.py`)
-- Environment variable management
-- Settings object for application configuration
+#### 6. **Configuration** (`backend/config.py`)
+- Lightweight settings object for environment values
+- Main runtime paths are read directly in services/security modules
 
 ### Request Flow
 
 ```
 HTTP Request
     ↓
-FastAPI Router (app.py)
+FastAPI Router (`backend/app/api.py`)
     ↓
-API Endpoint (endpoints/*.py)
+Endpoint Handler (`health`, `loads`, `metrics`)
     ↓
 Security Check (verify_api_key)
     ↓
-Service Layer (services/*.py)
+Service Layer (`backend/app/services.py`)
     ↓
 Data Processing (pandas)
     ↓
-Response Model (models/*.py)
+Response Model (`backend/app/models.py`)
     ↓
 JSON Response
 ```
@@ -94,20 +95,17 @@ JSON Response
 
 ```
 src/
-├── components/          # Reusable UI components
-├── pages/              # Page-level components
-├── services/           # API client (api.js)
-├── hooks/              # Custom React hooks
-├── styles/             # CSS files
-├── config.js           # Frontend configuration
-└── App.jsx             # Root component
+├── App.jsx              # Dashboard, charts, filters, tables
+├── config.js            # API_BASE_URL, API_KEY, apiFetch
+└── main.jsx             # React bootstrap
 ```
 
 ### API Integration
 
-- Centralized API client in `src/services/api.js`
-- Handles authentication headers
-- Error handling and retry logic
+- Centralized API client in `frontend/src/config.js`
+- Injects `X-API-Key` and `Content-Type` headers
+- Throws detailed errors for non-2xx responses
+- Uses `VITE_API_BASE_URL` and `VITE_API_KEY`
 
 ## Data Flow
 
@@ -115,13 +113,13 @@ src/
 
 ```
 Backend:  CSV File → pandas → DataFrame → JSON Response
-Frontend: API Call → JavaScript → React State → UI
+Frontend: apiFetch('/v1/loads') → React State → UI
 ```
 
 ### Submitting Metrics
 
 ```
-Frontend: Form Input → API Call
+Frontend: apiFetch('/v1/metrics')
 Backend:  Validation → CSV Append → Confirmation
 ```
 
@@ -179,8 +177,8 @@ Backend:  Validation → CSV Append → Confirmation
 
 ## API Versioning
 
-- Current version: `v1` (`/api/v1`)
-- Future versions can be added as `/api/v2`, etc.
+- Current version: `v1` (`/v1`)
+- Future versions can be added as `/v2`, etc.
 - Maintains backwards compatibility
 
 ## Testing Strategy

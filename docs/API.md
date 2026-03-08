@@ -2,16 +2,16 @@
 
 ## Base URL
 
-- **Production:** `https://happytransport-logistics.web.app`
+- **Production:** `https://<your-cloud-run-service-url>`
 - **Local:** `http://localhost:8000`
-- **API Prefix:** `/api/v1`
+- **API Prefix:** `/v1`
 
 ## Authentication
 
 All endpoints require the `X-API-Key` header:
 
 ```bash
-curl -H "X-API-Key: your-api-key" http://localhost:8000/api/v1/health
+curl -H "X-API-Key: your-api-key" http://localhost:8000/v1/health
 ```
 
 ## Endpoints
@@ -19,7 +19,7 @@ curl -H "X-API-Key: your-api-key" http://localhost:8000/api/v1/health
 ### System
 
 #### Health Check
-- **Endpoint:** `GET /api/v1/health`
+- **Endpoint:** `GET /v1/health`
 - **Description:** Check API health and dataset availability
 - **Response:**
   ```json
@@ -32,7 +32,7 @@ curl -H "X-API-Key: your-api-key" http://localhost:8000/api/v1/health
 ### Loads
 
 #### Get Loads
-- **Endpoint:** `GET /api/v1/loads`
+- **Endpoint:** `GET /v1/loads`
 - **Description:** Query available loads with optional filters
 - **Query Parameters:**
   - `origin` (string, optional): Filter by origin location
@@ -48,7 +48,7 @@ curl -H "X-API-Key: your-api-key" http://localhost:8000/api/v1/health
 - **Example Request:**
   ```bash
   curl -H "X-API-Key: dev-key-change-me" \
-    "http://localhost:8000/api/v1/loads?origin=Chicago&equipment_type=Dry%20Van"
+    "http://localhost:8000/v1/loads?origin=Chicago&equipment_type=Dry%20Van"
   ```
 
 - **Response:**
@@ -78,7 +78,7 @@ curl -H "X-API-Key: your-api-key" http://localhost:8000/api/v1/health
 ### Metrics
 
 #### Submit Metric
-- **Endpoint:** `POST /api/v1/metrics`
+- **Endpoint:** `POST /v1/metrics`
 - **Description:** Record booking outcome metrics
 - **Request Body:**
   ```json
@@ -116,7 +116,7 @@ curl -H "X-API-Key: your-api-key" http://localhost:8000/api/v1/health
   ```
 
 #### Get Metrics
-- **Endpoint:** `GET /api/v1/metrics`
+- **Endpoint:** `GET /v1/metrics`
 - **Description:** Retrieve recorded metrics with optional filters
 - **Query Parameters:**
   - `outcome` (string, optional): Filter by outcome
@@ -179,5 +179,5 @@ Use `limit` and `offset` parameters to paginate through results.
 ```bash
 # Get results 20-30
 curl -H "X-API-Key: dev-key-change-me" \
-  "http://localhost:8000/api/v1/metrics?offset=20&limit=10"
+  "http://localhost:8000/v1/metrics?offset=20&limit=10"
 ```

@@ -19,7 +19,7 @@ def test_submit_metric(client, auth_headers):
         "outcome": "Booked with negotiations"
     }
     response = client.post(
-        "/api/v1/metrics",
+        "/v1/metrics",
         json=payload,
         headers=auth_headers
     )
@@ -31,7 +31,7 @@ def test_submit_metric(client, auth_headers):
 
 def test_get_metrics(client, auth_headers):
     """Test retrieving metrics."""
-    response = client.get("/api/v1/metrics", headers=auth_headers)
+    response = client.get("/v1/metrics", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
     assert "total_records" in data

@@ -12,15 +12,16 @@
 ### Build Backend Image
 
 ```bash
-docker build -f backend/Dockerfile -t happytransport-api:latest .
+docker build -f backend/Dockerfile -t happytransport-api:latest backend
 ```
 
 ### Run Locally
 
 ```bash
-docker run -p 8000:8000 \
+docker run -p 8000:8080 \
   -e API_KEYS="your-api-key" \
   -e DATASET_PATH=/app/data/loads.csv \
+  -e METRICS_PATH=/app/data/metrics.csv \
   -v $(pwd)/backend/data:/app/data \
   happytransport-api:latest
 ```
@@ -72,11 +73,12 @@ Or manually:
 
 ```bash
 gcloud run deploy happytransport-api \
-  --source . \
+  --source backend \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars="API_KEYS=your-production-key" \
+  --port 8080 \
+  --set-env-vars="API_KEYS=your-production-key,DATASET_PATH=/app/data/loads.csv,METRICS_PATH=/app/data/metrics.csv" \
   --memory 512Mi \
   --timeout 300
 ```
@@ -109,10 +111,10 @@ Never commit secrets to version control. Use:
 
 ```bash
 # Create secret in GCP
-echo "your-api-key" | gcloud secrets create api-keys --data-file=-
+echo "your-api-key" | gcloud secrets create loads-api-keys --data-file=-
 
 # Reference in deployment
---set-env-vars API_KEYS=\$(gcloud secrets versions access latest --secret=api-keys)
+--set-secrets API_KEYS=loads-api-keys:latest
 ```
 
 ## Data Persistence
@@ -172,10 +174,10 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy happytransport-api \
-            --source . \
+            --source backend \
             --platform managed \
             --region us-central1 \
-            --set-env-vars API_KEYS=${{ secrets.PROD_API_KEY }}
+            --set-env-vars API_KEYS=${{ secrets.PROD_API_KEY }},DATASET_PATH=/app/data/loads.csv,METRICS_PATH=/app/data/metrics.csv
 ```
 
 ## Health Checks
@@ -189,7 +191,7 @@ SERVICE_URL=$(gcloud run services describe happytransport-api \
   --format='value(status.url)')
 
 # Test health endpoint
-curl -H "X-API-Key: your-api-key" $SERVICE_URL/api/v1/health
+curl -H "X-API-Key: your-api-key" $SERVICE_URL/v1/health
 ```
 
 ## Scaling Configuration
@@ -252,7 +254,7 @@ gcloud run services update-traffic happytransport-api \
 Already implemented with API key verification.
 
 ### 2. CORS Configuration
-Update `app/core/cors.py` for production:
+Update CORS origins in `backend/main.py` for production:
 
 ```python
 allowed_origins = [
@@ -287,7 +289,7 @@ Cloud Run provides automatic HTTPS.
 ```bash
 # Check if dataset is accessible
 gcloud run services update happytransport-api \
-  --update-env-vars DATASET_PATH=/app/data/loads.csv
+  --update-env-vars DATASET_PATH=/app/data/loads.csv,METRICS_PATH=/app/data/metrics.csv
 ```
 
 ### Authentication Failures
