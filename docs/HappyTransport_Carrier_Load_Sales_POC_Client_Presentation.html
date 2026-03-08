@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HappyTransport Carrier Load Sales Automation - POC</title>
+  <style>
+    body {
+      font-family: Calibri, Arial, sans-serif;
+      line-height: 1.45;
+      color: #111;
+      margin: 40px;
+      max-width: 900px;
+    }
+    h1, h2, h3 {
+      color: #0b2a4a;
+      margin-bottom: 8px;
+    }
+    h1 { font-size: 28px; }
+    h2 { font-size: 20px; margin-top: 28px; }
+    h3 { font-size: 16px; margin-top: 18px; }
+    p { margin: 8px 0 12px; }
+    ul, ol { margin-top: 6px; margin-bottom: 12px; }
+    li { margin-bottom: 6px; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0 18px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #c9d4e0;
+      padding: 8px;
+      vertical-align: top;
+    }
+    th {
+      background: #eef3f8;
+      text-align: left;
+    }
+    .note {
+      border-left: 4px solid #0b2a4a;
+      background: #f5f8fb;
+      padding: 10px 12px;
+      margin: 10px 0 16px;
+    }
+    .mono {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 13px;
+      background: #f5f5f5;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <h1>HappyTransport Carrier Load Sales Automation</h1>
+  <p><strong>Proof of Concept Presentation for Inbound Carrier Calls</strong></p>
+  <p><strong>Date:</strong> 8 March 2026</p>
+
+  <h2>1. Executive Summary</h2>
+  <p>
+    This proof of concept demonstrates a production-oriented workflow for automating inbound carrier load sales using HappyRobot plus a backend decision API and analytics dashboard. The solution helps your brokerage team respond faster, keep interactions consistent, and capture every call outcome for continuous improvement.
+  </p>
+  <p>
+    The POC is already functional end-to-end for load retrieval, outcome capture, and reporting. It is designed so that your operations team can start with CSV data and evolve to enterprise-grade infrastructure with minimal rework.
+  </p>
+
+  <h2>2. Customer Problem We Are Solving</h2>
+  <ul>
+    <li>Inbound carrier calls require fast load matching under time pressure.</li>
+    <li>Manual processes lead to inconsistent qualification and booking outcomes.</li>
+    <li>Teams often lack structured call-level data to improve conversion and margin.</li>
+    <li>Without feedback loops, negotiation performance and carrier quality are hard to optimize.</li>
+  </ul>
+
+  <h2>3. POC Scope and What Is Working Today</h2>
+  <table>
+    <tr>
+      <th>Capability</th>
+      <th>Status</th>
+      <th>How It Is Implemented</th>
+    </tr>
+    <tr>
+      <td>Load search and filtering</td>
+      <td>Working</td>
+      <td><span class="mono">GET /v1/loads</span> with filters for origin, destination, equipment type, weight, pickup, and delivery windows.</td>
+    </tr>
+    <tr>
+      <td>Call outcome capture</td>
+      <td>Working</td>
+      <td><span class="mono">POST /v1/metrics</span> records negotiation result, sentiment, MC details, duration, and price delta.</td>
+    </tr>
+    <tr>
+      <td>Performance and outcomes visibility</td>
+      <td>Working</td>
+      <td><span class="mono">GET /v1/metrics</span> powers dashboard KPIs and trend analysis.</td>
+    </tr>
+    <tr>
+      <td>API security</td>
+      <td>Working</td>
+      <td>All operational endpoints protected by <span class="mono">X-API-Key</span>; invalid and missing key paths tested.</td>
+    </tr>
+    <tr>
+      <td>Deployment path</td>
+      <td>Working</td>
+      <td>Cloud Run deployment script with auth checks, project access validation, and configurable private/public access.</td>
+    </tr>
+  </table>
+
+  <h2>4. High-Level Solution Design</h2>
+  <ol>
+    <li>Carrier calls inbound to HappyRobot voice agent.</li>
+    <li>Agent extracts intent and shipment constraints from the conversation.</li>
+    <li>Backend API returns matching loads in near-real time.</li>
+    <li>Agent offers options and handles negotiation logic.</li>
+    <li>At call end, agent posts structured outcome metrics for analytics.</li>
+    <li>Dashboard displays booking rate, negotiation impact, and sentiment trends.</li>
+  </ol>
+
+  <div class="note">
+    <strong>HappyRobot Inbound Flow Setup:</strong><br />
+    Configured in HappyRobot to receive inbound carrier calls and route to this automation flow.<br />
+    <em>Intentionally left without further implementation detail for manual completion during your interview/demo.</em>
+  </div>
+
+  <h2>5. Technical Deep Dive (Backend API)</h2>
+
+  <h3>5.1 Load Matching Endpoint</h3>
+  <p><span class="mono">GET /v1/loads</span></p>
+  <ul>
+    <li>Combines optional filters in a single call (origin, destination, equipment, weight range, pickup/delivery windows).</li>
+    <li>Uses case-insensitive partial matching to handle natural language variations from voice calls.</li>
+    <li>Converts date filters reliably with pandas datetime parsing.</li>
+    <li>Returns both <span class="mono">total_matches</span> and <span class="mono">filters_applied</span> for transparency.</li>
+  </ul>
+
+  <h3>5.2 Metrics Capture Endpoint</h3>
+  <p><span class="mono">POST /v1/metrics</span></p>
+  <ul>
+    <li>Captures booking outcomes including negotiation context, sentiment, duration, and carrier validation details.</li>
+    <li>Enforces controlled values for <span class="mono">sentiment</span> and <span class="mono">outcome</span> via schema validation.</li>
+    <li>Records UTC timestamps for clean historical analysis.</li>
+    <li>Uses thread locking for safe concurrent writes when multiple agent sessions submit metrics simultaneously.</li>
+  </ul>
+
+  <h3>5.3 Metrics Retrieval Endpoint</h3>
+  <p><span class="mono">GET /v1/metrics</span></p>
+  <ul>
+    <li>Supports filtering by outcome, sentiment, and carrier MC number.</li>
+    <li>Includes limit/offset pagination for dashboard and reporting use cases.</li>
+    <li>Returns <span class="mono">total_records</span> plus current page results for stable UI behavior.</li>
+  </ul>
+
+  <h3>5.4 Security and Reliability</h3>
+  <ul>
+    <li>Authentication through <span class="mono">X-API-Key</span> with 401/403 handling.</li>
+    <li>CORS configured for production frontend and local development.</li>
+    <li>Health endpoint validates dataset availability for uptime checks.</li>
+    <li>Environment-driven configuration for dataset path, metrics path, and API keys.</li>
+  </ul>
+
+  <h2>6. Analytics and Operations View</h2>
+  <p>The React dashboard currently provides operational and quality KPIs such as:</p>
+  <ul>
+    <li>Total processed interactions.</li>
+    <li>Booking rate (booked outcomes over total).</li>
+    <li>Average price difference vs. loadboard rate.</li>
+    <li>Average call duration.</li>
+    <li>Valid MC ratio.</li>
+    <li>Outcome and sentiment distributions.</li>
+    <li>Trend line for price delta over time.</li>
+  </ul>
+  <p>
+    If the API is unavailable, the dashboard can fall back to demo data to keep stakeholder demonstrations uninterrupted.
+  </p>
+
+  <h2>7. Evidence This POC Is Verified</h2>
+  <ul>
+    <li>API tests validate health, loads, and metrics behaviors.</li>
+    <li>Tests explicitly cover auth-required behavior (missing and invalid key scenarios).</li>
+    <li>Metrics submission and retrieval paths are validated in automated test cases.</li>
+  </ul>
+
+  <h2>8. Customer Value and Expected Outcomes</h2>
+  <ul>
+    <li><strong>Faster response times:</strong> Carrier receives qualified options quickly during inbound call.</li>
+    <li><strong>Higher consistency:</strong> Standardized handling logic across agents and shifts.</li>
+    <li><strong>Data-driven improvement:</strong> Every interaction captured for conversion and negotiation analysis.</li>
+    <li><strong>Operational transparency:</strong> Leadership can monitor booking performance and quality trends.</li>
+    <li><strong>Low-risk rollout:</strong> Start with current architecture, then scale to managed database and advanced orchestration.</li>
+  </ul>
+
+  <h2>9. Live Demo Script (Interview-Friendly)</h2>
+  <ol>
+    <li>Show <span class="mono">/v1/health</span> to confirm service and dataset readiness.</li>
+    <li>Simulate an inbound carrier request and call <span class="mono">/v1/loads</span> with practical filters.</li>
+    <li>Explain returned matches and filter transparency (<span class="mono">filters_applied</span>).</li>
+    <li>Submit a completed call result through <span class="mono">/v1/metrics</span>.</li>
+    <li>Refresh <span class="mono">/v1/metrics</span> and dashboard to show immediate analytical visibility.</li>
+    <li>Close with how this supports broker productivity, conversion quality, and continuous optimization.</li>
+  </ol>
+
+  <h2>10. Implementation Notes and Next Phase</h2>
+  <h3>Current POC Assumptions</h3>
+  <ul>
+    <li>Load and metrics persistence are CSV-based for speed of implementation.</li>
+    <li>Single-service architecture is optimized for rapid validation and low operating complexity.</li>
+  </ul>
+
+  <h3>Recommended Next Steps for Production</h3>
+  <ul>
+    <li>Move metrics storage from CSV to PostgreSQL for auditability and scale.</li>
+    <li>Add role-based access and key rotation policy for enterprise security.</li>
+    <li>Introduce richer matching and ranking logic (margin, capacity fit, historical acceptance).</li>
+    <li>Add SLA monitoring and alerting (latency, error rate, booking drop-offs).</li>
+    <li>Integrate carrier/compliance systems for deeper automated qualification.</li>
+  </ul>
+
+  <h2>11. Why This Approach Is a Strong Vendor Fit</h2>
+  <ul>
+    <li>Balances business outcomes with technical rigor.</li>
+    <li>Delivers immediate value while preserving a clear path to scale.</li>
+    <li>Provides measurable KPIs from day one, not just call automation.</li>
+    <li>Supports customer-centric operations by improving both speed and interaction quality.</li>
+  </ul>
+
+  <p><strong>Prepared for client presentation by:</strong> HappyTransport POC Team</p>
+</body>
+</html>
