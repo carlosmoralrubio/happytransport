@@ -7,6 +7,8 @@ set -euo pipefail
 
 # configuration (allow environment override for flexibility)
 PROJECT_ID="${PROJECT_ID:-happy-robot-7c023}"
+GCP_PROJECT_ID="${GCP_PROJECT_ID:-happyrobot-488916}"
+SECRET_NAME="${SECRET_NAME:-loads-api-keys}"
 # the hosting site determines the deployed URL (https://<site>.web.app).
 # default to 'happytransport-logistics' so the dashboard always lands at that
 # url.  You can still override by exporting HOSTING_SITE before running the
@@ -20,14 +22,31 @@ echo "============================================="
 echo "  Happy Transport Dashboard — Deploy"
 echo "============================================="
 
-# ── Step 1: Check .env exists ─────────────────────────────────────────────────
-if [[ ! -f ".env" ]]; then
-  echo "❌ .env file not found."
-  echo "   cp .env.example .env  →  fill in VITE_API_BASE_URL and VITE_API_KEY"
+# ── Step 1: Check .env.production exists ──────────────────────────────────────
+if [[ ! -f ".env.production" ]]; then
+  echo "❌ .env.production file not found."
+  echo "   Create it with at least VITE_API_BASE_URL=<your Cloud Run URL>"
   exit 1
 fi
-echo "▶ Environment:"
-grep "^VITE_API_BASE_URL" .env | sed 's/=.*/=<set>/' || true
+
+# ── Step 1b: Fetch API key from GCP Secret Manager ───────────────────────────
+echo "▶ Fetching API key from GCP Secret Manager (${SECRET_NAME})..."
+API_KEY="$(gcloud secrets versions access latest --secret="${SECRET_NAME}" --project="${GCP_PROJECT_ID}" 2>/dev/null)" \
+  || { echo "❌ Failed to fetch secret '${SECRET_NAME}' from project '${GCP_PROJECT_ID}'."; exit 1; }
+# Use first key if comma-separated
+API_KEY="${API_KEY%%,*}"
+[[ -n "${API_KEY}" ]] || { echo "❌ Secret '${SECRET_NAME}' is empty."; exit 1; }
+
+# Inject key into .env.production for the Vite build
+if grep -q '^VITE_API_KEY=' .env.production 2>/dev/null; then
+  sed -i '' "s|^VITE_API_KEY=.*|VITE_API_KEY=${API_KEY}|" .env.production
+else
+  echo "VITE_API_KEY=${API_KEY}" >> .env.production
+fi
+
+echo "▶ Environment (.env.production):"
+grep "^VITE_API_BASE_URL" .env.production | sed 's/=.*/=<set>/' || true
+echo "  VITE_API_KEY=<from Secret Manager>"
 
 # ── Step 2: Install dependencies ──────────────────────────────────────────────
 echo ""

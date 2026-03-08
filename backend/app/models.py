@@ -1,6 +1,13 @@
+"""
+Request and response models.
+"""
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
-from datetime import date
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Load Models
+# ──────────────────────────────────────────────────────────────────────
 
 class Load(BaseModel):
     load_id: int
@@ -17,16 +24,25 @@ class Load(BaseModel):
     miles: Optional[float] = None
     dimensions: Optional[str] = None
 
+
 class LoadsResponse(BaseModel):
     total_matches: int
     filters_applied: dict
     loads: list[Load]
 
 
+# ──────────────────────────────────────────────────────────────────────
+# Health Models
+# ──────────────────────────────────────────────────────────────────────
+
 class HealthResponse(BaseModel):
     status: str
     total_loads_in_dataset: int
 
+
+# ──────────────────────────────────────────────────────────────────────
+# Metrics Models
+# ──────────────────────────────────────────────────────────────────────
 
 class MetricRequest(BaseModel):
     load_info: str = Field(
@@ -50,7 +66,7 @@ class MetricRequest(BaseModel):
         ..., description="Time the agent took to close the process, in minutes")
     sentiment: Literal["positive", "neutral", "negative"] = Field(
         ..., description="Overall sentiment of the interaction: 'positive', 'neutral', or 'negative'")
-    outcome: Literal["Booked with negotiations", "Booked without negotiations", "Not booked with negotiations", 
+    outcome: Literal["Booked with negotiations", "Booked without negotiations", "Not booked with negotiations",
                      "Not booked without negotiations", "Not match", "Unknown"] = Field(
         ..., description="Final outcome of the call after the interaction.'")
 
