@@ -1,7 +1,3 @@
-# Simplified Backend Structure
-
-The backend has been streamlined for easier development and maintenance.
-
 ## Directory Structure
 
 ```

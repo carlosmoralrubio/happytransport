@@ -27,7 +27,7 @@ def _load_valid_keys() -> set[str]:
 
     # Fallback for local development only
     if not keys:
-        keys.add("dev-key-change-me")
+        keys.add("secret-dev")
 
     return keys
 

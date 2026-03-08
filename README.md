@@ -18,8 +18,6 @@ A full-stack application providing intelligent load queries, carrier management,
 
 ## 🏗 Project Structure
 
-Simplified monorepo with separate backend and frontend:
-
 ```
 happytransport/
 ├── backend/                    # FastAPI microservice
@@ -138,11 +136,11 @@ gcloud auth application-default login
 
 ```bash
 # 1. Edit the config variables at the top of deploy.sh
-vi deploy.sh   # Set PROJECT_ID, REGION, SERVICE_NAME
+vi ./scripts/deploy.sh   # Set PROJECT_ID, REGION, SERVICE_NAME
 
 # 2. Make executable and run
-chmod +x deploy.sh
-./deploy.sh
+chmod +x ./scripts/deploy.sh
+./scripts/deploy.sh
 ```
 
 The script will:

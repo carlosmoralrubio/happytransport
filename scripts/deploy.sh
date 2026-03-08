@@ -3,8 +3,8 @@
 
 set -e
 
-PROJECT_ID=${1:-"happy-transport"}
-REGION=${2:-"us-central1"}
+PROJECT_ID=${1:-"happyrobot-488916"}
+REGION=${2:-"europe-west1"}
 SERVICE_NAME="happytransport-api"
 
 echo "🚀 Deploying HappyTransport API to Cloud Run..."
@@ -19,7 +19,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --region "$REGION" \
   --project "$PROJECT_ID" \
   --allow-unauthenticated \
-  --set-env-vars="API_KEYS=your-production-api-key-here,DATASET_PATH=/app/data/loads.csv" \
+  --set-env-vars="API_KEYS=secret1,DATASET_PATH=/app/data/loads.csv" \
   --memory 512Mi \
   --timeout 300
 
