@@ -1,0 +1,7 @@
+load_info,origin,destination,equipment_type,carrier_legal_name,carrier_mc_number,carrier_mc_number_validity,price_diff,duration,sentiment,outcome,recorded_at
+"Load from New York to Los Angeles, Flatbed, 5000 lbs",New York,Los Angeles,Flatbed,ABC Trucking Inc,MC123456,true,150,45,positive,"Booked with negotiations",2026-03-08T09:15:00
+"Load from Chicago to Miami, Van, 2500 lbs",Chicago,Miami,Van,Premier Transport LLC,MC789012,true,-50,30,neutral,"Booked without negotiations",2026-03-09T10:30:00
+"Load from Seattle to Denver, Reefer, 3500 lbs",Seattle,Denver,Reefer,Cold Chain Logistics,MC345678,false,200,60,positive,"Booked with negotiations",2026-03-09T11:45:00
+"Load from Boston to Atlanta, Flatbed, 6000 lbs",Boston,Atlanta,Flatbed,Heavy Haul Services,MC901234,true,-100,90,negative,"Not booked with negotiations",2026-03-10T14:20:00
+"Load from Portland to Phoenix, Tanker, 4200 lbs",Portland,Phoenix,Tanker,Liquid Logistics Corp,MC567890,true,175,55,positive,"Booked with negotiations",2026-03-10T13:50:00
+"Load from Philadelphia to Houston, Flatbed, 7500 lbs",Philadelphia,Houston,Flatbed,Eastern Freight Partners,MC234567,true,125,72,positive,"Booked without negotiations",2026-03-08T15:30:00

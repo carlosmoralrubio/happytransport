@@ -33,11 +33,12 @@ const HappyTransportLogo = ({ size = 48, inverted = false }) => {
 
 // ── Colour helpers ─────────────────────────────────────────────────────────────
 const OUTCOME_COLORS = {
-  booked:      "#0a0a0a",
-  rejected:    "#555",
-  no_capacity: "#888",
-  cancelled:   "#bbb",
-  pending:     "#ddd",
+  "Booked with negotiations": "#0a0a0a",
+  "Booked without negotiations": "#555",
+  "Not booked with negotiations": "#888",
+  "Not booked without negotiations": "#bbb",
+  "Not match": "#ddd",
+  "Unknown": "#f0f0f0",
 }
 const SENTIMENT_COLORS = {
   positive: "#0a0a0a",
@@ -129,10 +130,12 @@ export default function App() {
       const params = new URLSearchParams({ limit: 500 })
       if (filter.outcome)   params.append("outcome",   filter.outcome)
       if (filter.sentiment) params.append("sentiment", filter.sentiment)
-      const data = await apiFetch(`/metrics?${params}`)
+      const data = await apiFetch(`/api/v1/metrics?${params}`)
       setMetrics(data.metrics || [])
       setUsedMock(false)
-    } catch {
+      console.log(`✅ Loaded ${data.metrics?.length || 0} metrics from API`)
+    } catch (err) {
+      console.error("❌ Failed to fetch metrics:", err.message)
       setMetrics(MOCK_METRICS)
       setUsedMock(true)
     } finally {
@@ -144,11 +147,11 @@ export default function App() {
 
   // ── Derived stats ────────────────────────────────────────────────────────────
   const total       = metrics.length
-  const booked      = metrics.filter(m => m.outcome === "booked").length
+  const booked      = metrics.filter(m => m.outcome && m.outcome.startsWith("Booked")).length
   const bookedPct   = total ? Math.round((booked / total) * 100) : 0
   const avgPriceDiff= total ? metrics.reduce((s, m) => s + parseFloat(m.price_diff || 0), 0) / total : 0
   const avgDuration = total ? metrics.reduce((s, m) => s + parseFloat(m.duration  || 0), 0) / total : 0
-  const validMC     = total ? metrics.filter(m => m.carrier_mc_number_validity === true || m.carrier_mc_number_validity === "True").length : 0
+  const validMC     = total ? metrics.filter(m => m.carrier_mc_number_validity === true || m.carrier_mc_number_validity === "true").length : 0
 
   const outcomeCounts   = countBy(metrics, "outcome")
   const sentimentCounts = countBy(metrics, "sentiment")

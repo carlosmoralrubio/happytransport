@@ -9,8 +9,12 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"
 export const API_KEY      = import.meta.env.VITE_API_KEY      || "dev-key-change-me"
 
+console.log("🔌 API Config:", { API_BASE_URL, API_KEY: "***" })
+
 export const apiFetch = async (path, options = {}) => {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  const url = `${API_BASE_URL}${path}`
+  console.log("📡 Fetching:", url)
+  const res = await fetch(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -18,6 +22,9 @@ export const apiFetch = async (path, options = {}) => {
       ...(options.headers || {}),
     },
   })
-  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`)
+  if (!res.ok) {
+    const errorText = await res.text()
+    throw new Error(`API error ${res.status}: ${errorText}`)
+  }
   return res.json()
 }

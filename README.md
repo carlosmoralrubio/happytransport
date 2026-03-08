@@ -1,61 +1,122 @@
-# Get Loads API
+# HappyTransport Logistics API
 
-A **FastAPI** service that reads freight load data from a CSV or Excel file and exposes filtering endpoints for use by an AI agent. Deployable to **Google Cloud Run** via Docker.
+**Modern, scalable APIs for freight load management and booking outcome tracking.**
 
----
+A full-stack application providing intelligent load queries, carrier management, and comprehensive metrics tracking for logistics operations. Built with FastAPI and React, designed for cloud deployment.
 
-## 📁 Project Structure
+## ✨ Features
+
+- 🚀 **RESTful API** with comprehensive load filtering
+- 📊 **Real-time metrics tracking** for booking outcomes
+- 🔐 **Secure API authentication** with API keys
+- 🌐 **CORS-enabled** for cross-origin requests
+- 📦 **Docker containerization** for consistent deployment
+- ⚡ **Async processing** with FastAPI
+- 🧪 **Comprehensive test suite** with pytest
+- 📱 **React dashboard** for data visualization
+- 🌍 **Cloud-ready** with Google Cloud Run deployment
+
+## 🏗 Project Structure
+
+Simplified monorepo with separate backend and frontend:
 
 ```
-.
-├── main.py               # FastAPI application
-├── loads.csv             # Sample dataset
-├── requirements.txt      # Python dependencies
-├── Dockerfile            # Container definition
-├── .dockerignore         # Files excluded from Docker build context
-├── deploy.sh             # One-shot GCP Cloud Run deployment script
-└── README.md
+happytransport/
+├── backend/                    # FastAPI microservice
+│   ├── app/
+│   │   ├── api.py             # All endpoints
+│   │   ├── models.py          # All request/response models
+│   │   ├── services.py        # Business logic
+│   │   └── security.py        # API authentication
+│   ├── tests/
+│   │   ├── test_api.py        # All tests
+│   │   └── conftest.py
+│   ├── data/                  # CSV data files
+│   ├── main.py
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+├── frontend/                   # React + Vite
+│   ├── src/
+│   ├── Dockerfile
+│   └── package.json
+│
+├── docs/                      # Documentation
+├── docker-compose.yml
+└── scripts/
 ```
 
----
+## 🚀 Quick Start
 
-## 🚀 Option A — Run Locally (no Docker)
+### Option 1: Docker Compose (Recommended)
 
 ```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Set your API keys
-export API_KEYS="my-secret-key"
-
-# 3. Start the server
-uvicorn main:app --reload --port 8000
-fastapi dev main.py
+docker-compose up
 ```
 
-Open **http://localhost:8000/docs** for the interactive Swagger UI.
+- Backend: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+- Frontend: http://localhost:5173
 
----
+### Option 2: Manual Setup
 
-## 🐳 Option B — Run with Docker Locally
-
+**Backend:**
 ```bash
-# 1. Build the image
-docker build -t get-loads-api .
-
-# 2. Run the container
-docker run -p 8080:8080 \
-  -e API_KEYS="my-secret-key" \
-  -e DATASET_PATH=/app/loads.csv \
-  get-loads-api
-
-# 3. Test it
-curl http://localhost:8080/health -H "X-API-Key: my-secret-key"
+python3 -m venv venv && source venv/bin/activate
+pip install -r backend/requirements.txt
+export API_KEYS="dev-key-change-me"
+cd backend && uvicorn main:app --reload
 ```
 
----
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## ☁️ Option C — Deploy to Google Cloud Run
+## 📚 Documentation
+
+- [**API Reference**](docs/API.md) - Complete endpoint documentation
+- [**Setup Guide**](docs/SETUP.md) - Local development setup
+- [**Architecture**](docs/ARCHITECTURE.md) - System design
+- [**Deployment**](docs/DEPLOYMENT.md) - Production deployment
+
+## 🔌 API Endpoints
+
+All endpoints require `X-API-Key` header.
+
+### System
+- `GET /api/v1/health` - Health check
+
+### Loads
+- `GET /api/v1/loads` - Query loads with filters
+
+### Metrics
+- `POST /api/v1/metrics` - Submit booking outcome metrics
+- `GET /api/v1/metrics` - Retrieve metrics
+
+**Example:**
+```bash
+curl -H "X-API-Key: dev-key-change-me" \
+  "http://localhost:8000/api/v1/loads?origin=Chicago"
+```
+
+## 🐳 Docker
+
+### Local Development
+```bash
+docker-compose up
+```
+
+### Build Backend
+```bash
+docker build -f backend/Dockerfile -t happytransport-api:latest .
+```
+
+### Deploy to Google Cloud Run
+
+## ☁️ Google Cloud Run Deployment
 
 ### Prerequisites
 
